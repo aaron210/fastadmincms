@@ -1,0 +1,151 @@
+{template "mheader.html"}
+
+<script>
+function dr_edit_son_type(tid) {
+    dr_iframe("{dr_lang('修改分类')}", "{dr_member_url($uriprefix.'/son_edit', ['cid'=>$index.id])}&tid="+tid, '50%', '150');
+}
+function dr_add_son_type() {
+    dr_iframe("{dr_lang('添加分类')}", "{dr_member_url($uriprefix.'/son_add', ['cid'=>$index.id])}", '50%', '150');
+}
+function dr_del_son_type(tid) {
+    dr_ajax_option('{dr_member_url($uriprefix.'/son_del', ['cid'=>$index.id])}&tid='+tid, '{dr_lang('此操作将联动删除本类下的全部章节，你确定要删除吗？')}', 1)
+}
+</script>
+<script src="{THEME_PATH}assets/js/admin.js" type="text/javascript"></script>
+
+
+<div class="row table-search-tool margin-bottom-20">
+    <div class=" finecms-top-name" class="finecms-top-name" style="padding-left: 15px; padding-bottom: 20px"><a  href="{$index.url}" target="_blank"><code>{dr_strcut(dr_clearhtml($index.title), 50)}</code></a></div>
+    <form action="{SELF}" method="get">
+        {dr_form_search_hidden($p)}
+
+        <div class="col-md-12 col-sm-12">
+            <label>
+                <select name="tid" class="form-control">
+                    <option value=""> {dr_lang('全部分类')} </option>
+                    {loop $stype $i $t}
+                    <option value="{$i}" {if strlen($param.tid) && $param.tid==$i}selected{/if}>{$t}</option>
+                    {/loop}
+                </select>
+            </label>
+            <label><i class="fa fa-caret-right"></i></label>
+            <label>
+                <select name="field" class="form-control">
+                    {loop $field $t}
+                    {if $t.ismain}
+                    <option value="{$t.fieldname}" {if $param.field==$t.fieldname}selected{/if}>{$t.name}</option>
+                    {/if}
+                    {/loop}
+                    <option value="id"> Id </option>
+                </select>
+            </label>
+            <label><i class="fa fa-caret-right"></i></label>
+            <label><input type="text" class="form-control" placeholder="" value="{$param['keyword']}" name="keyword" /></label>
+            <label><button type="submit" class="btn green btn-sm onloading" name="submit" > <i class="fa fa-search"></i> {dr_lang('搜索')}</button></label>
+        </div>
+
+    </form>
+
+</div>
+
+
+<form class="form-horizontal" role="form" id="myform">
+    {dr_form_hidden()}
+
+
+    <div class="portlet light bordered" style="">
+        <div class="portlet-title">
+            <div class="caption">
+                <span class="caption-subject font-green sbold ">{$sname}</span>
+            </div>
+
+            <div class="actions">
+                <a class="btn btn-circle  btn-default" href="javascript:dr_add_son_type();">
+                    <i class="fa fa-plus"></i> 创建分类
+                </a>
+                {if strlen($p.tid)}
+                <a class="btn btn-circle  btn-default" href="javascript:dr_edit_son_type({$p.tid});">
+                    <i class="fa fa-edit"></i> 修改分类
+                </a>
+                <a class="btn btn-circle  btn-default" href="javascript:dr_del_son_type({$p.tid});">
+                    <i class="fa fa-trash"></i> 删除分类
+                </a>
+                {/if}
+                <a class="btn btn-circle  btn-default" href="{dr_member_url($uriprefix.'/add', ['tid'=>$p.tid, 'cid'=>$index.id])}">
+                    <i class="fa fa-plus"></i> 发布内容
+                </a>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <div class="table-scrollable">
+                <table class="table table-striped table-bordered table-hover table-checkable dataTable">
+                    <thead>
+                    <tr class="heading">
+                        <th class="myselect">
+
+                        </th>
+                        <th style="text-align:center" width="70" class="{dr_sorting('displayorder')}" name="displayorder">{dr_lang('排序')}</th>
+
+                        <th width="50" style="text-align:center"> {dr_lang('收费')} </th>
+                        <th width="220" class="{dr_sorting('tid')}" name="tid">{dr_lang('分类')}</th>
+                        {loop $list_field $i $t}
+                        <th {if $t.width} width="{$t.width}"{/if} class="{dr_sorting($i)}" name="{$i}">{dr_lang($t.name)}</th>
+                        {/loop}
+                        <th style="text-align:center" width="70" class="{dr_sorting('status')}" name="status">{dr_lang('状态')}</th>
+
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {loop $list $t}
+                    {php $t['url'] = dr_son_url($t);}
+                    <tr class="odd gradeX" id="dr_row_{$t.id}">
+                        <td class="myselect">
+                            <label class="mt-table mt-checkbox mt-checkbox-single mt-checkbox-outline">
+                                <input type="checkbox" class="checkboxes" name="ids[]" value="{$t.id}" />
+                                <span></span>
+                            </label>
+                        </td>
+                        <td width="70" style="text-align:center"> <input type="text" onblur="dr_ajax_save(this.value, '{dr_member_url($uriprefix.'/order_edit', ['id'=>$t.id])}')" value="{$t.displayorder}" class="displayorder form-control input-sm input-inline input-mini"> </td>
+                        <td style="text-align:center">
+                            <a href="javascript:;" onclick="dr_ajax_open_close(this, '{dr_member_url($uriprefix.'/vip_edit', ['id'=>$t.id])}', 0);" class="badge badge-{if !$t.vip}no{else}yes{/if}"><i class="fa fa-{if !$t.vip}times{else}check{/if}"></i></a>
+                        </td>
+                        <td>{dr_list_function('title', $stype[$t.tid])}</td>
+                        {loop $list_field $i $tt}
+                        <td>{dr_list_function($tt.func, $t[$i], $param, $t, $field[$i])}</td>
+                        {/list}
+                        <td style="text-align:center">{Function_list::status($t.status)}</td>
+                        <td>
+                            <label><a href="{dr_member_url($uriprefix.'/edit', ['id'=>$t.id, 'cid'=>$t.cid])}" class="btn btn-xs green"> <i class="fa fa-edit"></i> {dr_lang('修改')}</a></label>
+
+                        </td>
+                    </tr>
+                    {/loop}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="row fc-list-footer table-checkable" style="margin-left: 5px">
+        <div class="col-md-12 fc-list-select">
+            <label class="mt-table mt-checkbox mt-checkbox-single mt-checkbox-outline">
+                <input type="checkbox" class="group-checkable" data-set=".checkboxes" />
+                <span></span>
+            </label>
+            <label><button type="button" onclick="dr_ajax_option('{dr_member_url($uriprefix.'/del')}', '{dr_lang('你确定要删除吗？')}', 1)" class="btn red btn-sm"> <i class="fa fa-trash"></i> {dr_lang('删除')}</button></label>
+
+        </div>
+    </div>
+
+
+    {if $mypages}
+    <div class="fc-pages text-center">{$mypages}</div>
+    {/if}
+
+</form>
+
+
+{template "mfooter.html"}
